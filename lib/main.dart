@@ -1,3 +1,4 @@
+import 'grid.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -25,12 +26,26 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final World _world = World();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Container(),
+        child: GridDrawer(_world.frontendWorld.list, _world.frontendWorld.w),
       ),
     );
   }
+}
+
+class World {
+  World();
+  //TODO: make world description
+  FrontendGridDesc get frontendWorld => FrontendGridDesc(1, []); //TODO: better
+}
+
+class FrontendGridDesc {
+  FrontendGridDesc(this.w, this.list);
+  final int w;
+  final List<GridCell> list;
 }
