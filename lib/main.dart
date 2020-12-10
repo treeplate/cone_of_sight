@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
 class World {
   World();
   //TODO: make world description
-  FrontendGridDesc get frontendWorld => FrontendGridDesc(1, []); //TODO: better
+  FrontendGridDesc get frontendWorld => FrontendGridDesc(1, [EmptyGridCell()]); //TODO: make better grid
 }
 
 class FrontendGridDesc {

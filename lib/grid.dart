@@ -25,11 +25,13 @@ class GridPainter extends CustomPainter {
   bool shouldRepaint(CustomPainter _) => true;
   void paint(Canvas canvas, Size size) {
     //print("PNT");
-    double cellDim = 10;
+    double cellDim = 40;
     Size cellSize = Size(cellDim, cellDim);
     for (int y = 0; y < height; y += 1) {
       for (int x = 0; x < width; x += 1) {
-        grid[x + (y * width)].paint(canvas, cellSize, Offset(x * cellDim, y * cellDim));
+        canvas.drawRect(Offset(x * cellDim, y * cellDim) & cellSize, (Paint()..color=Colors.black)..style=PaintingStyle.stroke);
+        grid[x + (y * width)]
+            .paint(canvas, cellSize, Offset(x * cellDim, y * cellDim));
       }
     }
   }
@@ -37,4 +39,8 @@ class GridPainter extends CustomPainter {
 
 abstract class GridCell {
   void paint(Canvas canvas, Size size, Offset offset);
+}
+
+class EmptyGridCell extends GridCell {
+  void paint(Canvas canvas, Size size, Offset offset) {}
 }
