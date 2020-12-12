@@ -44,3 +44,15 @@ abstract class GridCell {
 class EmptyGridCell extends GridCell {
   void paint(Canvas canvas, Size size, Offset offset) {}
 }
+
+class WallGridCell extends GridCell {
+  void paint(Canvas canvas, Size size, Offset offset) {
+    canvas.drawRect(offset & size, Paint()..color = Colors.black);
+  }
+}
+
+class PlayerGridCell extends GridCell {
+  void paint(Canvas canvas, Size size, Offset offset) {
+    canvas.drawOval(offset & size, Paint()..color = Colors.yellow);
+  }
+}
