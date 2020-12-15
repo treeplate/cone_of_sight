@@ -29,7 +29,7 @@ class GridPainter extends CustomPainter {
     Size cellSize = Size(cellDim, cellDim);
     for (int y = 0; y < height; y += 1) {
       for (int x = 0; x < width; x += 1) {
-        canvas.drawRect(Offset(x * cellDim, y * cellDim) & cellSize, (Paint()..color=Colors.black)..style=PaintingStyle.stroke);
+        canvas.drawRect(Offset(x * cellDim, y * cellDim) & cellSize, (Paint()..color=Colors.white));
         grid[x + (y * width)]
             .paint(canvas, cellSize, Offset(x * cellDim, y * cellDim));
       }
@@ -42,17 +42,30 @@ abstract class GridCell {
 }
 
 class EmptyGridCell extends GridCell {
-  void paint(Canvas canvas, Size size, Offset offset) {}
+  void paint(Canvas canvas, Size size, Offset offset) {
+  }
 }
 
 class WallGridCell extends GridCell {
   void paint(Canvas canvas, Size size, Offset offset) {
-    canvas.drawRect(offset & size, Paint()..color = Colors.black);
+    canvas.drawRect(offset & size, Paint()..color = Colors.red);
+  }
+}
+
+class GoalGridCell extends GridCell {
+  void paint(Canvas canvas, Size size, Offset offset) {
+    canvas.drawRect(offset & size, Paint()..color = Colors.green);
   }
 }
 
 class PlayerGridCell extends GridCell {
   void paint(Canvas canvas, Size size, Offset offset) {
     canvas.drawOval(offset & size, Paint()..color = Colors.yellow);
+  }
+}
+
+class ShadedGridCell extends GridCell {
+  void paint(Canvas canvas, Size size, Offset offset) {
+    canvas.drawRect(offset & size, Paint()..color = Colors.black);
   }
 }

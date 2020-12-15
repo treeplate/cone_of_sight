@@ -29,13 +29,15 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final World _world = World();
+  bool done = false;
   void _onKey(RawKeyEvent event) {
     setState(() {
-      if(event is RawKeyDownEvent) {
-      if(event.logicalKey == LogicalKeyboardKey.arrowLeft) _world.left();
-      if(event.logicalKey == LogicalKeyboardKey.arrowRight) _world.right();
-      if(event.logicalKey == LogicalKeyboardKey.arrowUp) _world.up();
-      if(event.logicalKey == LogicalKeyboardKey.arrowDown) _world.down();
+      if (event is RawKeyDownEvent) {
+        if (event.logicalKey == LogicalKeyboardKey.arrowLeft) _world.left();
+        if (event.logicalKey == LogicalKeyboardKey.arrowRight) _world.right();
+        if (event.logicalKey == LogicalKeyboardKey.arrowUp) _world.up();
+        if (event.logicalKey == LogicalKeyboardKey.arrowDown) _world.down();
+        if (_world.cells[_world.player] is Goal) done = true;
       }
     });
   }
@@ -47,8 +49,16 @@ class _MyHomePageState extends State<MyHomePage> {
       autofocus: true,
       focusNode: FocusNode(),
       child: Scaffold(
-        body: Center(
-          child: GridDrawer(_world.frontendWorld.list, _world.frontendWorld.w),
+        body: Container(
+          color: Colors.black,
+          child: Center(
+            child: done
+                ? Text(
+                    "You Won (for now)!",
+                    style: TextStyle(color: Colors.white),
+                  )
+                : GridDrawer(_world.frontendWorld.list, _world.frontendWorld.w),
+          ),
         ),
       ),
     );
@@ -57,11 +67,52 @@ class _MyHomePageState extends State<MyHomePage> {
 
 class World {
   World();
-  List<RCell> cells = [Wall(), Wall(), Empty(), Empty(), Wall(), Wall(), Empty(), Wall(), Empty(), Empty(), Wall(), Wall()];
-  int w = 3;
-  int player = 2;
+  List<RCell> cells = [
+    Wall(),
+    Wall(),
+    Wall(),
+    Wall(),
+    Wall(),
+    Wall(),
+    Wall(),
+    // \n
+    Wall(),
+    Empty(),
+    Empty(),
+    Empty(),
+    Wall(),
+    Wall(),
+    Wall(),
+
+    // \n
+    Wall(),
+    Empty(),
+    Empty(),
+    Empty(),
+    Empty(),
+    Goal(),
+    Wall(),
+    // \n
+    Wall(),
+    Empty(),
+    Empty(),
+    Empty(),
+    Wall(),
+    Wall(),
+    Wall(),
+    // \n
+    Wall(),
+    Wall(),
+    Wall(),
+    Wall(),
+    Wall(),
+    Wall(),
+    Wall(),
+  ];
+  int w = 7;
+  int player = 16;
   void right() {
-    if (player < cells.length-1 && cells[player + 1].canWalk) player++;
+    if (player < cells.length - 1 && cells[player + 1].canWalk) player++;
   }
 
   void left() {
@@ -77,8 +128,17 @@ class World {
   }
 
   FrontendGridDesc get frontendWorld {
-    List<GridCell> fCells = cells.map((RCell cell) => cell.gC).toList();
+    //List<GridCell> fCells = cells.map((RCell cell) => cell.gC).toList();
+    List<GridCell> fCells = List.filled(cells.length, ShadedGridCell());
     fCells[player] = PlayerGridCell();
+    fCells[player + 1] = cells[player + 1].gC;
+    fCells[player - 1] = cells[player - 1].gC;
+    fCells[player + w] = cells[player + w].gC;
+    fCells[player - w] = cells[player - w].gC;
+    fCells[player + w + 1] = cells[player + w + 1].gC;
+    fCells[player - w + 1] = cells[player - w + 1].gC;
+    fCells[player + w - 1] = cells[player + w - 1].gC;
+    fCells[player - w - 1] = cells[player - w - 1].gC;
     return FrontendGridDesc(w, fCells);
   }
 }
@@ -96,6 +156,11 @@ class Empty extends RCell {
 class Wall extends RCell {
   GridCell get gC => WallGridCell();
   bool get canWalk => false;
+}
+
+class Goal extends RCell {
+  GridCell get gC => GoalGridCell();
+  bool get canWalk => true;
 }
 
 class FrontendGridDesc {
