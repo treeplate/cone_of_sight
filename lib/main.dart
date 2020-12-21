@@ -1,13 +1,24 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 
 import 'grid.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(MyApp(
+      worlds: await Future.wait(List<Future<World?>>.generate(
+              1,
+              (index) => World.parse(
+                  rootBundle.loadString('worlds/${index + 1}.world')))) +
+          [null]));
 }
 
 class MyApp extends StatelessWidget {
+  MyApp({required this.worlds});
+  final List<World?> worlds;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -15,29 +26,43 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: MyHomePage(
+        worlds: worlds,
+      ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key}) : super(key: key);
+  MyHomePage({Key? key, required this.worlds}) : super(key: key);
+
+  final List<World?> worlds;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final World _world = World();
+  World? get _world => worlds[worldIndex];
+  List<World?> get worlds => widget.worlds;
+  int worldIndex = 0;
   bool done = false;
   void _onKey(RawKeyEvent event) {
     setState(() {
       if (event is RawKeyDownEvent) {
-        if (event.logicalKey == LogicalKeyboardKey.arrowLeft) _world.left();
-        if (event.logicalKey == LogicalKeyboardKey.arrowRight) _world.right();
-        if (event.logicalKey == LogicalKeyboardKey.arrowUp) _world.up();
-        if (event.logicalKey == LogicalKeyboardKey.arrowDown) _world.down();
-        if (_world.cells[_world.player] is Goal) done = true;
+        if (event.logicalKey == LogicalKeyboardKey.arrowLeft) _world?.left();
+        if (event.logicalKey == LogicalKeyboardKey.arrowRight) _world?.right();
+        if (event.logicalKey == LogicalKeyboardKey.arrowUp) _world?.up();
+        if (event.logicalKey == LogicalKeyboardKey.arrowDown) _world?.down();
+        if (_world?.cells[_world!.player] is Goal) {
+          setState(() {
+            done = true;
+          });
+          Timer(
+            Duration(seconds: 2),
+            () => setState(() => worldIndex++),
+          );
+        }
       }
     });
   }
@@ -52,12 +77,39 @@ class _MyHomePageState extends State<MyHomePage> {
         body: Container(
           color: Colors.black,
           child: Center(
-            child: done
+            child: _world == null
                 ? Text(
                     "You Won (for now)!",
                     style: TextStyle(color: Colors.white),
                   )
-                : GridDrawer(_world.frontendWorld.list, _world.frontendWorld.w),
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      done
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                  Text(
+                                    "Climbing the Vertical People Transporter",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 20,
+                                  ),
+                                  CircularProgressIndicator(),
+                                ])
+                          : Text(
+                              "Get to the Vertical People Transporter.",
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                      GridDrawer(
+                          _world!.frontendWorld.list, _world!.frontendWorld.w),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -66,49 +118,41 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class World {
-  World();
-  List<RCell> cells = [
-    Wall(),
-    Wall(),
-    Wall(),
-    Wall(),
-    Wall(),
-    Wall(),
-    Wall(),
-    // \n
-    Wall(),
-    Empty(),
-    Empty(),
-    Empty(),
-    Wall(),
-    Wall(),
-    Wall(),
+  World(this.cells, this.w, this.player);
+  static Future<World> parse(Future<String> text) async {
+    List<String> data = (await text).split('\n');
+    List<RCell> parsed = [];
+    int w = 0;
+    int playerIndex = int.parse(data.first);
+    //print("parse($to)");
+    for (String line in data.toList()..removeRange(0, 1)) {
+      w = 0;
+      for (String char in line.split('')) {
+        switch (char) {
+          case " ":
+            parsed.add(Empty());
+            break;
+          case "G":
+            parsed.add(Goal());
+            break;
+          case "#":
+            parsed.add(Wall());
+            break;
+          default:
+            throw FormatException(
+                "Unexpected \"$char\"(${char.runes.first}) while parsing world");
+        }
+        w++;
+      }
+    }
+    return World(
+      parsed,
+      w,
+      playerIndex,
+    );
+  }
 
-    // \n
-    Wall(),
-    Empty(),
-    Empty(),
-    Empty(),
-    Empty(),
-    Goal(),
-    Wall(),
-    // \n
-    Wall(),
-    Empty(),
-    Empty(),
-    Empty(),
-    Wall(),
-    Wall(),
-    Wall(),
-    // \n
-    Wall(),
-    Wall(),
-    Wall(),
-    Wall(),
-    Wall(),
-    Wall(),
-    Wall(),
-  ];
+  final List<RCell> cells;
   int w = 7;
   int player = 16;
   void right() {

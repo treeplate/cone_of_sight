@@ -54,7 +54,7 @@ class WallGridCell extends GridCell {
 
 class GoalGridCell extends GridCell {
   void paint(Canvas canvas, Size size, Offset offset) {
-    canvas.drawRect(offset & size, Paint()..color = Colors.green);
+    canvas.drawRect(offset & size, Paint()..color = Colors.grey);
   }
 }
 
