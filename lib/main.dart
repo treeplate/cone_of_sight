@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Center(
             child: _world == null
                 ? Text(
-                    "You Won (for now)!",
+                    "You Won!",
                     style: TextStyle(color: Colors.white),
                   )
                 : Column(
