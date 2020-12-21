@@ -26,10 +26,9 @@ class GridPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     //print("PNT");
     double cellDim = 40;
-    Size cellSize = Size(cellDim, cellDim);
+    Size cellSize = Size(cellDim+1, cellDim+1);
     for (int y = 0; y < height; y += 1) {
       for (int x = 0; x < width; x += 1) {
-        canvas.drawRect(Offset(x * cellDim, y * cellDim) & cellSize, (Paint()..color=Colors.white));
         grid[x + (y * width)]
             .paint(canvas, cellSize, Offset(x * cellDim, y * cellDim));
       }
@@ -43,6 +42,7 @@ abstract class GridCell {
 
 class EmptyGridCell extends GridCell {
   void paint(Canvas canvas, Size size, Offset offset) {
+    canvas.drawRect(offset & size, (Paint()..color=Colors.white));
   }
 }
 
@@ -60,6 +60,7 @@ class GoalGridCell extends GridCell {
 
 class PlayerGridCell extends GridCell {
   void paint(Canvas canvas, Size size, Offset offset) {
+    canvas.drawRect(offset & size, (Paint()..color=Colors.white));
     canvas.drawOval(offset & size, Paint()..color = Colors.yellow);
   }
 }

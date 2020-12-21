@@ -9,7 +9,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp(
       worlds: await Future.wait(List<Future<World?>>.generate(
-              1,
+              2,
               (index) => World.parse(
                   rootBundle.loadString('worlds/${index + 1}.world')))) +
           [null]));
@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool done = false;
   void _onKey(RawKeyEvent event) {
     setState(() {
-      if (event is RawKeyDownEvent) {
+      if (event is RawKeyDownEvent && done == false) {
         if (event.logicalKey == LogicalKeyboardKey.arrowLeft) _world?.left();
         if (event.logicalKey == LogicalKeyboardKey.arrowRight) _world?.right();
         if (event.logicalKey == LogicalKeyboardKey.arrowUp) _world?.up();
@@ -60,7 +60,10 @@ class _MyHomePageState extends State<MyHomePage> {
           });
           Timer(
             Duration(seconds: 2),
-            () => setState(() => worldIndex++),
+            () => setState(() {
+              worldIndex++;
+              done = false;
+            }),
           );
         }
       }
@@ -83,8 +86,25 @@ class _MyHomePageState extends State<MyHomePage> {
                     style: TextStyle(color: Colors.white),
                   )
                 : Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("Enable Debug More Sight", style: TextStyle(color: Colors.white),),
+                          Checkbox(
+                            onChanged: (bool? value) {
+                              setState(() {
+                                _world!.view = value! ? 2 : 1;
+                              });
+                            },
+                            value: _world!.view == 2,
+                            fillColor: MaterialStateProperty.resolveWith(
+                              (states) => Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                       done
                           ? Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -101,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   CircularProgressIndicator(),
                                 ])
                           : Text(
-                              "Get to the Vertical People Transporter.",
+                              "Get to the Vertical People Transporter (the grey box). Use arrow keys to move. You are the yellow dot",
                               style: TextStyle(
                                 color: Colors.white,
                               ),
@@ -129,7 +149,7 @@ class World {
       w = 0;
       for (String char in line.split('')) {
         switch (char) {
-          case " ":
+          case ".":
             parsed.add(Empty());
             break;
           case "G":
@@ -137,6 +157,9 @@ class World {
             break;
           case "#":
             parsed.add(Wall());
+            break;
+          case " ":
+            parsed.add(AlwaysShaded());
             break;
           default:
             throw FormatException(
@@ -159,6 +182,8 @@ class World {
     if (player < cells.length - 1 && cells[player + 1].canWalk) player++;
   }
 
+  int view = 1;
+
   void left() {
     if (player > 0 && cells[player - 1].canWalk) player--;
   }
@@ -174,15 +199,17 @@ class World {
   FrontendGridDesc get frontendWorld {
     //List<GridCell> fCells = cells.map((RCell cell) => cell.gC).toList();
     List<GridCell> fCells = List.filled(cells.length, ShadedGridCell());
+    List<int> places = [];
+    for (int a = -view; a < view + 1; a++) {
+      for (int b = -view; b < view + 1; b++) {
+        //print("$a + $w * $b ($player)");
+        places.add(a + w * b);
+      }
+    }
+    for (int place in places) {
+      fCells[player + place] = cells[player + place].gC;
+    }
     fCells[player] = PlayerGridCell();
-    fCells[player + 1] = cells[player + 1].gC;
-    fCells[player - 1] = cells[player - 1].gC;
-    fCells[player + w] = cells[player + w].gC;
-    fCells[player - w] = cells[player - w].gC;
-    fCells[player + w + 1] = cells[player + w + 1].gC;
-    fCells[player - w + 1] = cells[player - w + 1].gC;
-    fCells[player + w - 1] = cells[player + w - 1].gC;
-    fCells[player - w - 1] = cells[player - w - 1].gC;
     return FrontendGridDesc(w, fCells);
   }
 }
@@ -205,6 +232,11 @@ class Wall extends RCell {
 class Goal extends RCell {
   GridCell get gC => GoalGridCell();
   bool get canWalk => true;
+}
+
+class AlwaysShaded extends RCell {
+  GridCell get gC => ShadedGridCell();
+  bool get canWalk => false;
 }
 
 class FrontendGridDesc {
