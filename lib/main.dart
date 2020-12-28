@@ -25,6 +25,9 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        fontFamily: "Robofontini",
+
+        //textTheme: Typography.whiteMountainView,
       ),
       home: MyHomePage(
         worlds: worlds,
@@ -46,6 +49,16 @@ class _MyHomePageState extends State<MyHomePage> {
   World? get _world => worlds[worldIndex];
   List<World?> get worlds => widget.worlds;
   int worldIndex = 0;
+  int textIndex = 0;
+  List<String?> texts = [
+    "Hello, yellow dot [you].",
+    "I have been instructed to guide you through these stories (floors).",
+    "Use arrow keys to move, and get to the Vertical People Transporter [grey box].",
+    null,
+    "Your lantern does not seem very good.",
+    "You should be getting to the next Vertical People transporter.",
+    null,
+  ];
   bool done = false;
   void _onKey(RawKeyEvent event) {
     setState(() {
@@ -54,6 +67,8 @@ class _MyHomePageState extends State<MyHomePage> {
         if (event.logicalKey == LogicalKeyboardKey.arrowRight) _world?.right();
         if (event.logicalKey == LogicalKeyboardKey.arrowUp) _world?.up();
         if (event.logicalKey == LogicalKeyboardKey.arrowDown) _world?.down();
+        if (event.logicalKey == LogicalKeyboardKey.enter &&
+            texts[textIndex + 1] != null) textIndex++;
         if (_world?.cells[_world!.player] is Goal) {
           setState(() {
             done = true;
@@ -62,6 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Duration(seconds: 2),
             () => setState(() {
               worldIndex++;
+              textIndex += 2;
               done = false;
             }),
           );
@@ -82,13 +98,16 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Center(
             child: _world == null
                 ? Text(
-                    "You Won!",
-                    style: TextStyle(color: Colors.white),
+                    "Goodbye. You are on the roof. {  The end because the end of the game is when you are on the roof  }",
+                    style: TextStyle(
+                      fontFamily: "Robofontini",
+                      color: Colors.white,
+                    ),
                   )
                 : Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Row(
+                      /*Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text("Enable Debug More Sight", style: TextStyle(color: Colors.white),),
@@ -104,15 +123,16 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ),
                         ],
-                      ),
+                      ),*/
                       done
                           ? Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                   Text(
-                                    "Climbing the Vertical People Transporter",
+                                    "'Happy to transport you up!' --Vertical People Transporter",
                                     style: TextStyle(
                                       color: Colors.white,
+                                      fontFamily: "Robofontini",
                                     ),
                                   ),
                                   SizedBox(
@@ -120,10 +140,23 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   CircularProgressIndicator(),
                                 ])
-                          : Text(
-                              "Get to the Vertical People Transporter (the grey box). Use arrow keys to move. You are the yellow dot",
-                              style: TextStyle(
-                                color: Colors.white,
+                          : RichText(
+                              text: TextSpan(
+                                text: texts[textIndex]!,
+                                style: TextStyle(
+                                  fontFamily: "Robofontini",
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: texts[textIndex + 1] == null
+                                        ? "  \n\n(Get to the Vertical People Transporter {the grey box})"
+                                        : "  \n\n(Press <ENTER> to continue)",
+                                    style: TextStyle(
+                                      fontFamily: "Robofontini",
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                       GridDrawer(

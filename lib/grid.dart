@@ -48,13 +48,14 @@ class EmptyGridCell extends GridCell {
 
 class WallGridCell extends GridCell {
   void paint(Canvas canvas, Size size, Offset offset) {
-    canvas.drawRect(offset & size, Paint()..color = Colors.red);
+    canvas.drawRect(offset & size, Paint()..color = Colors.brown);
   }
 }
 
 class GoalGridCell extends GridCell {
   void paint(Canvas canvas, Size size, Offset offset) {
     canvas.drawRect(offset & size, Paint()..color = Colors.grey);
+    canvas.drawLine(offset+Offset(size.width/2, 0), offset+Offset(size.width/2,size.height), Paint());
   }
 }
 
