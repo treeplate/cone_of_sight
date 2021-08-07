@@ -55,6 +55,7 @@ flutter:
   assets:
       - worlds/1.world
       - worlds/2.world
+      - worlds/3.world
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 

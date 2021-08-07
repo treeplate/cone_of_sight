@@ -5,14 +5,19 @@ import 'package:flutter/services.dart';
 import 'grid.dart';
 import 'package:flutter/material.dart';
 
+//TODO: animation
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(MyApp(
+  runApp(
+    MyApp(
       worlds: await Future.wait(List<Future<World?>>.generate(
-              2,
+              3,
               (index) => World.parse(
                   rootBundle.loadString('worlds/${index + 1}.world')))) +
-          [null]));
+          [null],
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -51,16 +56,20 @@ class _MyHomePageState extends State<MyHomePage> {
   int worldIndex = 0;
   int textIndex = 0;
   List<String?> texts = [
-    "Hello, yellow dot [you].",
-    "I have been instructed to guide you through these stories (floors).",
-    "Use arrow keys to move, and get to the Vertical People Transporter [grey box].",
+    "Hello, yellow dot.",
+    "I have been instructed to guide you through these stories.",
+    "Use arrow keys to move, and get to the Vertical People Transporter, which looks like an elevator.",
     null,
     "Your lantern does not seem very good.",
-    "You should be getting to the next Vertical People transporter.",
+    "You should be getting to the next Vertical People Transporter.",
+    null,
+    "Your lantern has been upgraded.",
+    "You can now see better.",
+    "This story was modeled after a certain place in the forest. I've heard you've been there.",
     null,
   ];
   bool done = false;
-  void _onKey(RawKeyEvent event) {
+  bool _onKey(FocusNode node, RawKeyEvent event) {
     setState(() {
       if (event is RawKeyDownEvent && done == false) {
         if (event.logicalKey == LogicalKeyboardKey.arrowLeft) _world?.left();
@@ -77,28 +86,34 @@ class _MyHomePageState extends State<MyHomePage> {
             Duration(seconds: 2),
             () => setState(() {
               worldIndex++;
-              textIndex += 2;
+              while (texts[textIndex] != null) textIndex++;
+              textIndex += 1;
+              if (worldIndex == 3) _world?.view = 2;
               done = false;
             }),
           );
         }
       }
     });
+    return true;
   }
+
+  FocusNode focusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
-    return RawKeyboardListener(
+    focusNode.requestFocus();
+    return Focus(
+      autofocus: false,
       onKey: _onKey,
-      autofocus: true,
-      focusNode: FocusNode(),
+      focusNode: focusNode,
       child: Scaffold(
         body: Container(
           color: Colors.black,
           child: Center(
             child: _world == null
                 ? Text(
-                    "Goodbye. You are on the roof. {  The end because the end of the game is when you are on the roof  }",
+                    "{ The End }",
                     style: TextStyle(
                       fontFamily: "Robofontini",
                       color: Colors.white,
@@ -149,7 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 children: [
                                   TextSpan(
                                     text: texts[textIndex + 1] == null
-                                        ? "  \n\n(Get to the Vertical People Transporter {the grey box})"
+                                        ? ""
                                         : "  \n\n(Press <ENTER> to continue)",
                                     style: TextStyle(
                                       fontFamily: "Robofontini",
@@ -160,7 +175,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                             ),
                       GridDrawer(
-                          _world!.frontendWorld.list, _world!.frontendWorld.w),
+                        _world!.frontendWorld.list,
+                        _world!.frontendWorld.w,
+                      ),
                     ],
                   ),
           ),
@@ -171,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class World {
-  World(this.cells, this.w, this.player);
+  World(this.cells, this.w, this.player, this.view);
   static Future<World> parse(Future<String> text) async {
     List<String> data = (await text).split('\n');
     List<RCell> parsed = [];
@@ -205,6 +222,7 @@ class World {
       parsed,
       w,
       playerIndex,
+      1,
     );
   }
 
@@ -215,7 +233,7 @@ class World {
     if (player < cells.length - 1 && cells[player + 1].canWalk) player++;
   }
 
-  int view = 1;
+  int view;
 
   void left() {
     if (player > 0 && cells[player - 1].canWalk) player--;
