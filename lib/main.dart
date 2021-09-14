@@ -63,13 +63,14 @@ class _MyHomePageState extends State<MyHomePage> {
     "Your lantern does not seem very good.",
     "You should be getting to the next Vertical People Transporter.",
     null,
-    "Your lantern has been upgraded.",
-    "You can now see better.",
-    "This story was modeled after a certain place in the forest. I've heard you've been there.",
+    "Your lantern has been upgraded. (or should be)",
+    "You can now see better. (not really)",
+    "This story was modeled after a certain place in the forest. I've heard you've been there.)",
+    "Next clue is in the smaller cat tree.",
     null,
   ];
   bool done = false;
-  bool _onKey(FocusNode node, RawKeyEvent event) {
+  KeyEventResult _onKey(FocusNode node, RawKeyEvent event) {
     setState(() {
       if (event is RawKeyDownEvent && done == false) {
         if (event.logicalKey == LogicalKeyboardKey.arrowLeft) _world?.left();
@@ -95,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       }
     });
-    return true;
+    return KeyEventResult.handled;
   }
 
   FocusNode focusNode = FocusNode();
